@@ -1,5 +1,4 @@
 1. Report:
-
  How many rows do we have in each table in employees database?
 - departments: 9
 - dep_emp: 331.603 
@@ -8,17 +7,14 @@
 - salaries: 2.003.868 
 - titles: 443.308 
 
-
  2. Report:
-
- How many employees with the first name "Mark" do we have in our company?
+How many employees with the first name "Mark" do we have in our company?
 
 SELECT * FROM `employees` WHERE employees.first_name = 'Mark'
 
 230
 
  3. Report:
-
  How many employees with the first name "Eric" and that the last name begins with "A" do we have in our company?
 
 SELECT * FROM `employees` 
@@ -27,7 +23,6 @@ WHERE employees.first_name = 'Eric' AND employees.last_name LIKE 'A%';
 13
 
  4. Report:
-
  How many employees do we have that work for us from 1985 and who they are?
 
 300.024 everyone basically
@@ -36,9 +31,7 @@ SELECT * FROM `employees` WHERE `hire_date` >= '1990-01-01' ORDER BY `hire_date`
 
 135.227 
 
-
  5. Report:
-
  How many employees got hired from 1990 until 1997 and who they are?
 
 SELECT * FROM `employees` WHERE `hire_date` BETWEEN '1990-01-01' AND '1997-12-31' ORDER BY `hire_date` ASC
@@ -46,7 +39,6 @@ SELECT * FROM `employees` WHERE `hire_date` BETWEEN '1990-01-01' AND '1997-12-31
 129.545 
 
  6. Report:
-
  How many employees have salaries bigger than 70000 and who they are? 
 
 SELECT `employees`.`first_name`, `employees`.`last_name`, `salaries`.`salary`
@@ -57,7 +49,6 @@ WHERE `salary` >= 70000;
 642.153
 
  7. Report:
-
  How many employees do we have in department Research who work for us from 1992 and who they are?
 
 SELECT `departments`.`dept_name`, `employees`.`last_name`, `employees`.`first_name`, `employees`.`hire_date`
@@ -69,7 +60,6 @@ WHERE ((`departments`.`dept_name` = 'Research') AND (`employees`.`hire_date` >= 
 6.145 
 
  8. Report:
-
  How many employees do we have in department Finance who work for us from 1985 until now and who have salaries bigger than 75000 - who they are?
 
 SELECT `departments`.`dept_name`, `employees`.`last_name`, `employees`.`first_name`, `employees`.`hire_date`
@@ -81,26 +71,64 @@ WHERE ((`departments`.`dept_name` = 'Finance') AND (`employees`.`hire_date` >= '
 17.346 
 
  9. Report:
-
  We need a table with employees: first and last name, birth of date, gender, hire_date, title and salary, who are working for us in this moment.
 
+SELECT `employees`.`first_name`, `employees`.`last_name`, `employees`.`birth_date`, `employees`.`gender`, `employees`.`hire_date`, `titles`.`title`, `salaries`.`salary`
+FROM `employees`
+    LEFT JOIN `titles` ON `titles`.`emp_no` = `employees`.`emp_no`
+    LEFT JOIN `salaries` ON `salaries`.`emp_no` = `employees`.`emp_no`
 
 
  10. Report:
-
  We need a table with managers: first and last name, birth of date, gender, hire_date, title, department name and salary, who are working for us in this moment.
 
-SELECT `employees`.`first_name`, `employees`.`last_name`, `titles`.*, `employees`.`birth_date`, `employees`.`gender`, `employees`.`hire_date`, `departments`.`dept_name`, `salaries`.`salary` FROM `employees` LEFT JOIN `titles` ON `titles`.`emp_no` = `employees`.`emp_no` LEFT JOIN `salaries` ON `salaries`.`emp_no` = `employees`.`emp_no` LEFT JOIN `dept_emp` ON `dept_emp`.`emp_no` = `employees`.`emp_no` LEFT JOIN `departments` ON `dept_emp`.`dept_no` = `departments`.`dept_no`
-
-
+SELECT `employees`.`first_name`, `employees`.`last_name`, `titles`.*, `employees`.`birth_date`, `employees`.`gender`, `employees`.`hire_date`, `departments`.`dept_name`, `salaries`.`salary` 
+FROM `employees` 
+LEFT JOIN `titles` ON `titles`.`emp_no` = `employees`.`emp_no` 
+LEFT JOIN `salaries` ON `salaries`.`emp_no` = `employees`.`emp_no` 
+LEFT JOIN `dept_emp` ON `dept_emp`.`emp_no` = `employees`.`emp_no` 
+LEFT JOIN `departments` ON `dept_emp`.`dept_no` = `departments`.`dept_no`
+WHERE titles.title = 'Manager';
 
  Bonus query:
-
   Create a query which will join all tables and show all data from all tables.
 
-
+SELECT `employees`.*, `salaries`.*, `departments`.*, `dept_emp`.*, `dept_manager`.*, `titles`.*
+FROM `employees`
+    LEFT JOIN `salaries` ON `salaries`.`emp_no` = `employees`.`emp_no`
+    LEFT JOIN `dept_emp` ON `dept_emp`.`emp_no` = `employees`.`emp_no`
+    LEFT JOIN `departments` ON `dept_emp`.`dept_no` = `departments`.`dept_no`
+    LEFT JOIN `dept_manager` ON `dept_manager`.`emp_no` = `employees`.`emp_no`
+    LEFT JOIN `titles` ON `titles`.`emp_no` = `employees`.`emp_no`
 
  Next step:
-
  Now you should create at least 5 queries on your own, try to use data from more than 2 tables.
+
+A. 
+Find female employees earning more than 900.000
+
+SELECT `employees`.`first_name`, `employees`.`last_name`, `employees`.`gender`, `salaries`.`salary` 
+FROM `salaries` 
+LEFT JOIN `employees` ON `salaries`.`emp_no` = `employees`.`emp_no` 
+WHERE `employees`.`gender` ='F' AND `salary` >= 70000; 
+ORDER BY `salaries`.`salary` ASC
+
+B. Are there female managers?
+
+SELECT `employees`.`first_name`, `employees`.`last_name`, `titles`.`title`, `employees`.`gender`
+FROM `employees` 
+LEFT JOIN `titles` ON `titles`.`emp_no` = `employees`.`emp_no` 
+WHERE ((`employees`.`gender`='F') AND (`titles`.`title` = 'Manager'))
+
+Yes there are 13. 
+
+SELECT `employees`.`first_name`, `employees`.`last_name`, `titles`.`title`, `employees`.`gender` FROM `employees` LEFT JOIN `titles` ON `titles`.`emp_no` = `employees`.`emp_no` WHERE ((`employees`.`gender`='M') AND (`titles`.`title` = 'Manager'))
+
+As opposed to 11 men. This is some alternate universe. Especially as one of the male managers is called Margareta??
+
+C. Age when people were employed
+SELECT `employees`.`first_name`, `employees`.`last_name`, `employees`.`birth_date`, `employees`.`hire_date` FROM `employees`;
+
+SELECT DATEDIFF(year, `employees`.`birth_date`, `employees`.`hire_date`); this does not work
+
 
